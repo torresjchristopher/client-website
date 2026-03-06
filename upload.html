@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drea - Upload Dashboard</title>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #1d1d1f;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --border: #e5e5e7;
+            --accent-lighter: #fafafa;
+            --bg-primary: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* LOGIN PAGE */
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        .login-container {
+            text-align: center;
+            max-width: 400px;
+            padding: 2rem;
+        }
+
+        .login-container h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .login-form input {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            background: var(--accent-lighter);
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: var(--text-primary);
+        }
+
+        .login-form button {
+            padding: 1rem;
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .login-form button:hover {
+            opacity: 0.9;
+        }
+
+        .error-message {
+            color: #ff3b30;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* DASHBOARD */
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: #ff3b30;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .dashboard-content {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            width: 100%;
+        }
+
+        .upload-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--text-primary);
+        }
+
+        .upload-form {
+            display: none;
+            background: var(--accent-lighter);
+            padding: 2rem;
+            border-radius: 12px;
+        }
+
+        .upload-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            padding: 1rem 2rem;
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .submit-btn:hover {
+            opacity: 0.9;
+        }
+
+        .success-message {
+            color: #34c759;
+            margin-top: 1rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <h1>Drea</h1>
+            <div class="login-form">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Client Upload Portal</p>
+                <input type="password" id="passwordInput" placeholder="Enter Password" onkeypress="if(event.key==='Enter') login()" />
+                <button onclick="login()">Access Dashboard</button>
+                <div id="errorMsg" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD PAGE -->
+    <div id="dashboard" class="dashboard">
+        <div class="dashboard-header">
+            <h1>Upload Content</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <div class="dashboard-content">
+            <div class="upload-tabs">
+                <button class="tab-btn active" onclick="switchTab('reviews')">Google Reviews</button>
+                <button class="tab-btn" onclick="switchTab('videos')">Review Videos</button>
+                <button class="tab-btn" onclick="switchTab('jojo')">Jojo Content</button>
+                <button class="tab-btn" onclick="switchTab('messages')">Messages</button>
+            </div>
+
+            <!-- GOOGLE REVIEWS FORM -->
+            <div id="reviews-form" class="upload-form active">
+                <h2 style="margin-bottom: 1.5rem;">Upload Google Review</h2>
+                <div class="form-group">
+                    <label>Star Rating</label>
+                    <select id="reviewRating" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif;">
+                        <option value="5">★★★★★ (5 Stars)</option>
+                        <option value="4">★★★★ (4 Stars)</option>
+                        <option value="3">★★★ (3 Stars)</option>
+                        <option value="2">★★ (2 Stars)</option>
+                        <option value="1">★ (1 Star)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Review Text</label>
+                    <textarea id="reviewText" placeholder="Write your review..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Business Name (Optional)</label>
+                    <input type="text" id="businessName" placeholder="e.g., Rao's Cincinnati" />
+                </div>
+                <div class="form-group">
+                    <label>Google Business Page URL (Optional)</label>
+                    <input type="url" id="businessUrl" placeholder="https://maps.google.com/..." />
+                </div>
+                <div class="form-group">
+                    <label>Upload Photo (Optional)</label>
+                    <input type="file" id="reviewImage" accept="image/*" style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; width: 100%;" />
+                    <small style="color: var(--text-secondary);">Supports JPG, PNG (Max 5MB)</small>
+                </div>
+                <button class="submit-btn" onclick="uploadReview()">Upload Review</button>
+                <div id="reviewSuccess" class="success-message hidden">✓ Review uploaded successfully!</div>
+            </div>
+
+            <!-- VIDEOS FORM -->
+            <div id="videos-form" class="upload-form">
+                <h2 style="margin-bottom: 1.5rem;">Upload Review Video (TikTok)</h2>
+                <div class="form-group">
+                    <label>TikTok Video URL or Embed Code</label>
+                    <textarea id="videoUrl" placeholder="Paste TikTok URL or embed code..."></textarea>
+                </div>
+                <button class="submit-btn" onclick="uploadVideo()">Upload Video</button>
+                <div id="videoSuccess" class="success-message hidden">✓ Video uploaded successfully!</div>
+            </div>
+
+            <!-- JOJO FORM -->
+            <div id="jojo-form" class="upload-form">
+                <h2 style="margin-bottom: 1.5rem;">Upload Jojo Content (TikTok)</h2>
+                <div class="form-group">
+                    <label>TikTok Video URL or Embed Code</label>
+                    <textarea id="jojoUrl" placeholder="Paste TikTok URL or embed code..."></textarea>
+                </div>
+                <button class="submit-btn" onclick="uploadJojo()">Upload Jojo Content</button>
+                <div id="jojoSuccess" class="success-message hidden">✓ Content uploaded successfully!</div>
+            </div>
+
+            <!-- MESSAGES FORM -->
+            <div id="messages-form" class="upload-form">
+                <h2 style="margin-bottom: 1.5rem;">Messages</h2>
+                <div id="messagesContainer" style="display: flex; flex-direction: column; gap: 1.5rem;"></div>
+                
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                    <h3 style="margin-bottom: 1rem;">Send a Message</h3>
+                    <div class="form-group">
+                        <label>To</label>
+                        <input type="text" id="messageRecipient" placeholder="Company Name" />
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea id="messageText" placeholder="Type your message..."></textarea>
+                    </div>
+                    <button class="submit-btn" onclick="sendMessage()">Send Message</button>
+                    <div id="messageSuccess" class="success-message hidden">✓ Message sent!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PASSWORD = "Star";
+        let isLoggedIn = false;
+
+        function login() {
+            const password = document.getElementById("passwordInput").value;
+            const errorMsg = document.getElementById("errorMsg");
+            
+            if (password === PASSWORD) {
+                isLoggedIn = true;
+                document.getElementById("loginPage").style.display = "none";
+                document.getElementById("dashboard").classList.add("active");
+                localStorage.setItem("dreaLoggedIn", "true");
+            } else {
+                errorMsg.textContent = "Incorrect password";
+            }
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            document.getElementById("dashboard").classList.remove("active");
+            document.getElementById("loginPage").style.display = "flex";
+            document.getElementById("passwordInput").value = "";
+            localStorage.removeItem("dreaLoggedIn");
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll(".upload-form").forEach(form => {
+                form.classList.remove("active");
+            });
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                btn.classList.remove("active");
+            });
+
+            document.getElementById(tabName + "-form").classList.add("active");
+            event.target.classList.add("active");
+
+            if (tabName === "messages") {
+                loadMessages();
+            }
+        }
+
+        function uploadReview() {
+            const rating = document.getElementById("reviewRating").value;
+            const text = document.getElementById("reviewText").value;
+            const businessName = document.getElementById("businessName").value;
+            const businessUrl = document.getElementById("businessUrl").value;
+            const imageFile = document.getElementById("reviewImage").files[0];
+
+            if (!text) {
+                alert("Review text is required");
+                return;
+            }
+
+            // Convert image to base64 if present
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageData = e.target.result;
+                    saveReview(rating, text, businessName, businessUrl, imageData);
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                saveReview(rating, text, businessName, businessUrl, null);
+            }
+        }
+
+        function saveReview(rating, text, businessName, businessUrl, imageData) {
+            let reviews = JSON.parse(localStorage.getItem("dreaReviews") || "[]");
+            reviews.push({ rating, text, businessName, businessUrl, image: imageData, timestamp: new Date().toISOString() });
+            localStorage.setItem("dreaReviews", JSON.stringify(reviews));
+
+            document.getElementById("reviewSuccess").classList.remove("hidden");
+            setTimeout(() => {
+                document.getElementById("reviewSuccess").classList.add("hidden");
+                document.getElementById("reviewText").value = "";
+                document.getElementById("businessName").value = "";
+                document.getElementById("businessUrl").value = "";
+                document.getElementById("reviewImage").value = "";
+            }, 2000);
+        }
+
+        function uploadVideo() {
+            const url = document.getElementById("videoUrl").value;
+            if (!url) {
+                alert("Please provide a TikTok URL or embed code");
+                return;
+            }
+
+            let videos = JSON.parse(localStorage.getItem("dreaVideos") || "[]");
+            videos.push({ url: url, timestamp: new Date().toISOString() });
+            localStorage.setItem("dreaVideos", JSON.stringify(videos));
+
+            document.getElementById("videoSuccess").classList.remove("hidden");
+            setTimeout(() => {
+                document.getElementById("videoSuccess").classList.add("hidden");
+                document.getElementById("videoUrl").value = "";
+            }, 2000);
+        }
+
+        function uploadJojo() {
+            const url = document.getElementById("jojoUrl").value;
+            if (!url) {
+                alert("Please provide a TikTok URL or embed code");
+                return;
+            }
+
+            let jojos = JSON.parse(localStorage.getItem("dreaJojo") || "[]");
+            jojos.push({ url: url, timestamp: new Date().toISOString() });
+            localStorage.setItem("dreaJojo", JSON.stringify(jojos));
+
+            document.getElementById("jojoSuccess").classList.remove("hidden");
+            setTimeout(() => {
+                document.getElementById("jojoSuccess").classList.add("hidden");
+                document.getElementById("jojoUrl").value = "";
+            }, 2000);
+        }
+
+        function sendMessage() {
+            const recipient = document.getElementById("messageRecipient").value;
+            const text = document.getElementById("messageText").value;
+
+            if (!recipient || !text) {
+                alert("Please fill in all fields");
+                return;
+            }
+
+            let messages = JSON.parse(localStorage.getItem("dreaMessages") || "[]");
+            messages.push({ 
+                from: "Drea", 
+                to: recipient, 
+                text: text, 
+                timestamp: new Date().toISOString() 
+            });
+            localStorage.setItem("dreaMessages", JSON.stringify(messages));
+
+            document.getElementById("messageSuccess").classList.remove("hidden");
+            setTimeout(() => {
+                document.getElementById("messageSuccess").classList.add("hidden");
+                document.getElementById("messageRecipient").value = "";
+                document.getElementById("messageText").value = "";
+                loadMessages();
+            }, 2000);
+        }
+
+        function loadMessages() {
+            const container = document.getElementById("messagesContainer");
+            const inquiries = JSON.parse(localStorage.getItem("dreaContactInquiries") || "[]");
+            const messages = JSON.parse(localStorage.getItem("dreaMessages") || "[]");
+
+            let html = "";
+
+            // Display inquiries from landing page
+            if (inquiries.length > 0) {
+                html += "<h3 style='margin-bottom: 1rem; color: var(--text-primary);'>Incoming Inquiries</h3>";
+                html += inquiries.map(inquiry => `
+                    <div style="background: var(--accent-lighter); padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--text-primary);">
+                        <p style="margin: 0; font-weight: 600; color: var(--text-primary);">${inquiry.company}</p>
+                        <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">${inquiry.email} • ${inquiry.type}</p>
+                        <p style="margin: 0.75rem 0 0 0; color: var(--text-secondary); white-space: pre-wrap;">${inquiry.timestamp}</p>
+                    </div>
+                `).join("");
+            }
+
+            // Display sent messages
+            if (messages.length > 0) {
+                html += messages.length > 0 ? "<h3 style='margin-top: 2rem; margin-bottom: 1rem; color: var(--text-primary);'>Conversation</h3>" : "";
+                html += messages.map(msg => `
+                    <div style="background: ${msg.from === 'Drea' ? 'var(--accent-lighter)' : 'white'}; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                        <p style="margin: 0; font-weight: 600; color: var(--text-primary);">${msg.from} → ${msg.to}</p>
+                        <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); white-space: pre-wrap;">${msg.text}</p>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">${new Date(msg.timestamp).toLocaleString()}</p>
+                    </div>
+                `).join("");
+            }
+
+            if (!html) {
+                html = "<p style='color: var(--text-secondary); text-align: center;'>No messages yet.</p>";
+            }
+
+            container.innerHTML = html;
+        }
+
+        window.addEventListener("load", () => {
+            if (localStorage.getItem("dreaLoggedIn")) {
+                isLoggedIn = true;
+                document.getElementById("loginPage").style.display = "none";
+                document.getElementById("dashboard").classList.add("active");
+                loadMessages();
+            }
+        });
+    </script>
+</body>
+</html>

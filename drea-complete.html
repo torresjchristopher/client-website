@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drea - Premium Portfolio</title>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #1d1d1f;
+            --primary-light: #424245;
+            --accent: #a0a0a0;
+            --accent-light: #f5f5f7;
+            --accent-lighter: #fafafa;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f7;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --border: #e5e5e7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.015em;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        /* LOGIN PAGE */
+        .login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        .login-container {
+            text-align: center;
+            max-width: 400px;
+            padding: 2rem;
+        }
+
+        .login-container h1 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .login-form input {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            background: var(--accent-lighter);
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: var(--text-primary);
+        }
+
+        .login-form button {
+            padding: 1rem;
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .login-form button:hover {
+            opacity: 0.9;
+        }
+
+        .error-message {
+            color: #ff3b30;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* DASHBOARD */
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .dashboard-header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background: #ff3b30;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .dashboard-content {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            width: 100%;
+        }
+
+        .upload-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--text-primary);
+        }
+
+        .upload-form {
+            display: none;
+            background: var(--accent-lighter);
+            padding: 2rem;
+            border-radius: 12px;
+        }
+
+        .upload-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            padding: 1rem 2rem;
+            background: var(--text-primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .submit-btn:hover {
+            opacity: 0.9;
+        }
+
+        .success-message {
+            color: #34c759;
+            margin-top: 1rem;
+        }
+
+        /* PORTFOLIO */
+        .portfolio-page {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            box-shadow: none;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-pfp {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s ease;
+            padding: 0.75rem 0;
+            letter-spacing: -0.01em;
+        }
+
+        nav button:hover {
+            color: var(--text-primary);
+        }
+
+        nav button.active {
+            color: var(--text-primary);
+        }
+
+        nav button.active::after {
+            content: '';
+            position: absolute;
+            bottom: -0.5rem;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--text-primary);
+        }
+
+        main {
+            flex: 1;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 6rem 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-header h2 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.7;
+            font-weight: 400;
+        }
+
+        /* GOOGLE REVIEW STYLE */
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .google-review {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .google-review:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            transform: translateY(-4px);
+        }
+
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .review-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--accent-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .review-author {
+            flex: 1;
+        }
+
+        .review-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .review-stars {
+            color: #fbbf24;
+            font-size: 0.9rem;
+        }
+
+        .review-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .review-business {
+            font-size: 0.85rem;
+            color: #0066cc;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .review-business:hover {
+            text-decoration: underline;
+        }
+
+        /* VIDEO GALLERIES */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .gallery-item {
+            background: var(--accent-light);
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 9/16;
+        }
+
+        .gallery-item iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* FOOTER */
+        .footer {
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border);
+            margin-top: 8rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .section-header h2 {
+                font-size: 2rem;
+            }
+
+            nav {
+                gap: 1rem;
+                font-size: 0.8rem;
+            }
+
+            .reviews-grid,
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+
+            main {
+                padding: 3rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <h1>Drea</h1>
+            <div class="login-form">
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Client Upload Portal</p>
+                <input type="password" id="passwordInput" placeholder="Enter Password" />
+                <button onclick="login()">Access Dashboard</button>
+                <div id="errorMsg" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD PAGE -->
+    <div id="dashboard" class="dashboard">
+        <div class="dashboard-header">
+            <h1>Upload Content</h1>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        <div class="dashboard-content">
+            <div class="upload-tabs">
+                <button class="tab-btn active" onclick="switchTab('reviews')">Google Reviews</button>
+                <button class="tab-btn" onclick="switchTab('videos')">Review Videos</button>
+                <button class="tab-btn" onclick="switchTab('jojo')">Jojo Content</button>
+            </div>
+
+            <!-- GOOGLE REVIEWS FORM -->
+            <div id="reviews-form" class="upload-form active">
+                <h2 style="margin-bottom: 1.5rem;">Upload Google Review</h2>
+                <div class="form-group">
+                    <label>Star Rating</label>
+                    <select id="reviewRating" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif;">
+                        <option value="5">★★★★★ (5 Stars)</option>
+                        <option value="4">★★★★ (4 Stars)</option>
+                        <option value="3">★★★ (3 Stars)</option>
+                        <option value="2">★★ (2 Stars)</option>
+                        <option value="1">★ (1 Star)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Review Text</label>
+                    <textarea id="reviewText" placeholder="Write your review..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Business Name</label>
+                    <input type="text" id="businessName" placeholder="e.g., Rao's Cincinnati" />
+                </div>
+                <div class="form-group">
+                    <label>Google Business Page URL</label>
+                    <input type="url" id="businessUrl" placeholder="https://maps.google.com/..." />
+                </div>
+                <button class="submit-btn" onclick="uploadReview()">Upload Review</button>
+                <div id="reviewSuccess" class="success-message hidden">✓ Review uploaded successfully!</div>
+            </div>
+
+            <!-- VIDEOS FORM -->
+            <div id="videos-form" class="upload-form">
+                <h2 style="margin-bottom: 1.5rem;">Upload Review Video (TikTok)</h2>
+                <div class="form-group">
+                    <label>TikTok Video URL or Embed Code</label>
+                    <textarea id="videoUrl" placeholder="Paste TikTok URL or embed code..."></textarea>
+                </div>
+                <button class="submit-btn" onclick="uploadVideo()">Upload Video</button>
+                <div id="videoSuccess" class="success-message hidden">✓ Video uploaded successfully!</div>
+            </div>
+
+            <!-- JOJO FORM -->
+            <div id="jojo-form" class="upload-form">
+                <h2 style="margin-bottom: 1.5rem;">Upload Jojo Content (TikTok)</h2>
+                <div class="form-group">
+                    <label>TikTok Video URL or Embed Code</label>
+                    <textarea id="jojoUrl" placeholder="Paste TikTok URL or embed code..."></textarea>
+                </div>
+                <button class="submit-btn" onclick="uploadJojo()">Upload Jojo Content</button>
+                <div id="jojoSuccess" class="success-message hidden">✓ Content uploaded successfully!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PORTFOLIO PAGE -->
+    <div id="portfolioPage" class="portfolio-page">
+        <header class="header">
+            <div class="header-container">
+                <h1 class="logo-text">
+                    <img src="Pfp.png" alt="Drea" class="logo-pfp">
+                    Drea
+                </h1>
+                <nav>
+                    <button class="nav-btn active" onclick="navigateTo('/')">About</button>
+                    <button class="nav-btn" onclick="navigateTo('/reviews')">Reviews</button>
+                    <button class="nav-btn" onclick="navigateTo('/unboxings')">Unboxings</button>
+                    <button class="nav-btn" onclick="navigateTo('/jojo')">Jojo</button>
+                </nav>
+            </div>
+        </header>
+
+        <main>
+            <!-- ABOUT PAGE (LANDING) -->
+            <section id="about-section" class="tab-content">
+                <div class="section-header">
+                    <h2>About Drea</h2>
+                    <p class="subtitle">UGC Creator</p>
+                </div>
+                <div style="max-width: 800px; margin: 3rem auto; text-align: center;">
+                    <p style="color: var(--text-primary); font-size: 1.3rem; font-weight: 500; margin-bottom: 1rem;">Beauty / Fashion / Food</p>
+                    <p style="color: var(--text-secondary); font-size: 1rem; margin-bottom: 0.5rem;">Minneapolis, Minnesota</p>
+                    <a href="mailto:dreastar.ugc@gmail.com" style="color: var(--text-secondary); text-decoration: none; font-size: 1rem; display: inline-block; margin-bottom: 2rem; border-bottom: 1px solid var(--text-secondary); padding-bottom: 0.25rem;">dreastar.ugc@gmail.com</a>
+                    <p style="color: var(--text-secondary); line-height: 1.8; font-size: 1.05rem; margin-bottom: 2rem;">I create captivating, high-quality and authentic content that will resonate with your audience and lead to conversions.</p>
+                    <p style="color: var(--text-secondary); font-weight: 500; font-size: 0.9rem; margin-bottom: 1rem;">Find me on Social Media:</p>
+                </div>
+            </section>
+
+            <!-- REVIEWS -->
+            <section id="reviews-section" class="tab-content hidden">
+                <div class="section-header">
+                    <h2>Client Reviews</h2>
+                    <p class="subtitle">Google reviews from our satisfied clients</p>
+                </div>
+                <div id="reviewsContainer" class="reviews-grid"></div>
+            </section>
+
+            <!-- REVIEW VIDEOS -->
+            <section id="videos-section" class="tab-content hidden">
+                <div class="section-header">
+                    <h2>Unboxings</h2>
+                    <p class="subtitle">Unboxing and review content from our clients</p>
+                </div>
+                <div id="videosContainer" class="gallery-grid"></div>
+            </section>
+
+            <!-- JOJO -->
+            <section id="jojo-section" class="tab-content hidden">
+                <div class="section-header">
+                    <h2>Jojo Gallery</h2>
+                    <p class="subtitle">Adorable moments with our beloved Jojo</p>
+                </div>
+                <div id="jojoContainer" class="gallery-grid"></div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="https://www.tiktok.com/@imdreastarr" target="_blank">TikTok</a>
+                    <a href="https://www.instagram.com/imdreastar" target="_blank">Instagram</a>
+                    <a href="https://www.youtube.com/@imdreastar" target="_blank">YouTube</a>
+                    <a href="mailto:dreastar.ugc@gmail.com">Email</a>
+                </div>
+                <button onclick="goToUpload()" style="background: none; border: none; color: var(--text-secondary); font-size: 0.75rem; cursor: pointer; padding-top: 1rem; margin-top: 1rem; border-top: 1px solid var(--border);">Upload</button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDemoKey123456789",
+            authDomain: "drea-portfolio.firebaseapp.com",
+            projectId: "drea-portfolio",
+            storageBucket: "drea-portfolio.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef1234567890"
+        };
+
+        // Initialize Firebase (using demo config - you'll need real credentials)
+        let db;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch (error) {
+            console.log("Firebase not fully initialized - using localStorage fallback");
+        }
+
+        const PASSWORD = "Star";
+        let isLoggedIn = false;
+
+        function login() {
+            const password = document.getElementById("passwordInput").value;
+            const errorMsg = document.getElementById("errorMsg");
+            
+            if (password === PASSWORD) {
+                isLoggedIn = true;
+                document.getElementById("loginPage").style.display = "none";
+                document.getElementById("dashboard").classList.add("active");
+                document.getElementById("portfolioPage").style.display = "none";
+                localStorage.setItem("dreaLoggedIn", "true");
+            } else {
+                errorMsg.textContent = "Incorrect password";
+            }
+        }
+
+        function logout() {
+            isLoggedIn = false;
+            document.getElementById("dashboard").classList.remove("active");
+            document.getElementById("loginPage").style.display = "flex";
+            document.getElementById("passwordInput").value = "";
+            localStorage.removeItem("dreaLoggedIn");
+        }
+
+        function goToUpload() {
+            document.getElementById("portfolioPage").style.display = "none";
+            document.getElementById("loginPage").style.display = "flex";
+            document.getElementById("passwordInput").focus();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll(".upload-form").forEach(f => f.classList.remove("active"));
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+            document.getElementById(tab + "-form").classList.add("active");
+            event.target.classList.add("active");
+        }
+
+        function switchPortfolioTab(tab) {
+            document.querySelectorAll(".tab-content").forEach(t => t.classList.add("hidden"));
+            document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+            
+            if (tab === "portfolio") {
+                document.getElementById("portfolio-section").classList.remove("hidden");
+            } else if (tab === "reviews") {
+                document.getElementById("reviews-section").classList.remove("hidden");
+                loadReviews();
+            } else if (tab === "videos") {
+                document.getElementById("videos-section").classList.remove("hidden");
+                loadVideos();
+            } else if (tab === "jojo") {
+                document.getElementById("jojo-section").classList.remove("hidden");
+                loadJojo();
+            }
+            
+            event.target.classList.add("active");
+        }
+
+        function uploadReview() {
+            const rating = document.getElementById("reviewRating").value;
+            const text = document.getElementById("reviewText").value;
+            const businessName = document.getElementById("businessName").value;
+            const businessUrl = document.getElementById("businessUrl").value;
+
+            if (!text || !businessName || !businessUrl) {
+                alert("Please fill in all fields");
+                return;
+            }
+
+            const review = {
+                rating: parseInt(rating),
+                text: text,
+                businessName: businessName,
+                businessUrl: businessUrl,
+                timestamp: new Date().toISOString()
+            };
+
+            // Save to localStorage (fallback) or Firebase
+            let reviews = JSON.parse(localStorage.getItem("dreaReviews") || "[]");
+            reviews.push(review);
+            localStorage.setItem("dreaReviews", JSON.stringify(reviews));
+
+            document.getElementById("reviewSuccess").classList.remove("hidden");
+            setTimeout(() => {
+                document.getElementById("reviewSuccess").classList.add("hidden");
+                document.getElementById("reviewText").value = "";
+                document.getElementById("businessName").value = "";
+                document.getElementById("businessUrl").value = "";
+            }, 2000);
+        }
+
+        function uploadVideo() {
+            const url = document.getElementById("videoUrl").value;
+            if (!url) {
+                alert("Please provide a TikTok URL or embed code");
+                return;
+            }
+
+            let videos = JSON.parse(localStorage.getItem("dreaVideos") || "[]");
+            videos.push({ url: url, timestamp: new Date().toISOString() });
+            localStorage.setItem("dreaVideos", JSON.stringify(videos));
+
+            document.getElementById("videoSuccess").classList.remove("hidden");
+            setTimeout(() => {
+                document.getElementById("videoSuccess").classList.add("hidden");
+                document.getElementById("videoUrl").value = "";
+            }, 2000);
+        }
+
+        function uploadJojo() {
+            const url = document.getElementById("jojoUrl").value;
+            if (!url) {
+                alert("Please provide a TikTok URL or embed code");
+                return;
+            }
+
+            let jojos = JSON.parse(localStorage.getItem("dreaJojo") || "[]");
+            jojos.push({ url: url, timestamp: new Date().toISOString() });
+            localStorage.setItem("dreaJojo", JSON.stringify(jojos));
+
+            document.getElementById("jojoSuccess").classList.remove("hidden");
+            setTimeout(() => {
+                document.getElementById("jojoSuccess").classList.add("hidden");
+                document.getElementById("jojoUrl").value = "";
+            }, 2000);
+        }
+
+        function loadReviews() {
+            const container = document.getElementById("reviewsContainer");
+            const reviews = JSON.parse(localStorage.getItem("dreaReviews") || "[]");
+            
+            container.innerHTML = reviews.map(review => `
+                <div class="google-review" onclick="window.open('${review.businessUrl}', '_blank')">
+                    <div class="review-header">
+                        <div class="review-avatar">👤</div>
+                        <div class="review-author">
+                            <div class="review-name">Drea</div>
+                            <div class="review-stars">${"★".repeat(review.rating)}</div>
+                        </div>
+                    </div>
+                    <div class="review-text">${review.text}</div>
+                    <a href="${review.businessUrl}" target="_blank" class="review-business">${review.businessName}</a>
+                </div>
+            `).join("");
+
+            if (reviews.length === 0) {
+                container.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No reviews yet. Be the first to upload!</p>";
+            }
+        }
+
+        function loadVideos() {
+            const container = document.getElementById("videosContainer");
+            const videos = JSON.parse(localStorage.getItem("dreaVideos") || "[]");
+            
+            container.innerHTML = videos.map(video => {
+                const embedUrl = video.url.includes("tiktok.com") 
+                    ? `https://www.tiktok.com/embed/v2/${extractTikTokId(video.url)}`
+                    : video.url;
+                
+                return `
+                    <div class="gallery-item">
+                        <iframe src="${embedUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                `;
+            }).join("");
+
+            if (videos.length === 0) {
+                container.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No videos yet.</p>";
+            }
+        }
+
+        function loadJojo() {
+            const container = document.getElementById("jojoContainer");
+            const jojos = JSON.parse(localStorage.getItem("dreaJojo") || "[]");
+            
+            container.innerHTML = jojos.map(jojo => {
+                const embedUrl = jojo.url.includes("tiktok.com")
+                    ? `https://www.tiktok.com/embed/v2/${extractTikTokId(jojo.url)}`
+                    : jojo.url;
+                
+                return `
+                    <div class="gallery-item">
+                        <iframe src="${embedUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                `;
+            }).join("");
+
+            if (jojos.length === 0) {
+                container.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No Jojo content yet.</p>";
+            }
+        }
+
+        function extractTikTokId(url) {
+            const match = url.match(/\/video\/(\d+)/);
+            return match ? match[1] : "";
+        }
+
+        // ROUTING FUNCTIONS
+        function navigateTo(path) {
+            window.location.hash = path;
+            loadPage(path);
+        }
+
+        function loadPage(path) {
+            // Hide all sections
+            document.querySelectorAll(".tab-content").forEach(section => {
+                section.classList.add("hidden");
+            });
+            
+            // Update nav buttons
+            document.querySelectorAll(".nav-btn").forEach(btn => {
+                btn.classList.remove("active");
+            });
+
+            // Show correct section and mark nav button active
+            switch(path) {
+                case '/reviews':
+                    document.getElementById("reviews-section").classList.remove("hidden");
+                    document.querySelectorAll(".nav-btn")[1].classList.add("active");
+                    loadReviews();
+                    break;
+                case '/unboxings':
+                    document.getElementById("videos-section").classList.remove("hidden");
+                    document.querySelectorAll(".nav-btn")[2].classList.add("active");
+                    loadVideos();
+                    break;
+                case '/jojo':
+                    document.getElementById("jojo-section").classList.remove("hidden");
+                    document.querySelectorAll(".nav-btn")[3].classList.add("active");
+                    loadJojo();
+                    break;
+                case '/':
+                default:
+                    document.getElementById("about-section").classList.remove("hidden");
+                    document.querySelectorAll(".nav-btn")[0].classList.add("active");
+                    break;
+            }
+        }
+
+        // Handle browser back/forward
+        window.addEventListener("hashchange", () => {
+            const path = window.location.hash.slice(1) || "/";
+            loadPage(path);
+        });
+
+        // Check if already logged in
+        window.addEventListener("load", () => {
+            if (localStorage.getItem("dreaLoggedIn")) {
+                isLoggedIn = true;
+                document.getElementById("loginPage").style.display = "none";
+                document.getElementById("dashboard").classList.add("active");
+            } else {
+                document.getElementById("portfolioPage").style.display = "flex";
+                // Load initial page based on URL hash
+                const path = window.location.hash.slice(1) || "/";
+                loadPage(path);
+            }
+        });
+    </script>
+</body>
+</html>
