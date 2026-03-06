@@ -521,19 +521,24 @@
     <div id="contactModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
         <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2 id="modalTitle" style="margin: 0; font-size: 1.5rem;">Get in Contact</h2>
+                <h2 id="modalTitle" style="margin: 0; font-size: 1.5rem;">Send Products</h2>
                 <button onclick="closeContactModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-secondary);">✕</button>
             </div>
-            
-            <p id="modalMessage" style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;"></p>
             
             <form onsubmit="handleContactSubmit(event)" style="display: flex; flex-direction: column; gap: 1rem;">
                 <input type="text" id="contactCompany" placeholder="Company Name" required style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 0.95rem;">
                 
                 <input type="email" id="contactEmail" placeholder="Email Address" required style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 0.95rem;">
                 
+                <select id="contactType" required style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 0.95rem;">
+                    <option value="">Select Option</option>
+                    <option value="scheduling">Scheduling a Review</option>
+                    <option value="jojo">Sending Products to Jojo</option>
+                    <option value="drea">Sending Products to Drea</option>
+                </select>
+                
                 <button type="submit" style="padding: 0.75rem; background: var(--text-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;">Send Inquiry</button>
-                <div id="contactSuccess" class="hidden" style="color: #34c759; text-align: center; margin-top: 0.5rem;">✓ Inquiry sent! I'll review it shortly.</div>
+                <div id="contactSuccess" class="hidden" style="color: #34c759; text-align: center; margin-top: 0.5rem;">✓ Inquiry sent! I'll get back to you soon.</div>
             </form>
         </div>
     </div>
@@ -557,28 +562,9 @@
         const PASSWORD = "Star";
         
         // CONTACT MODAL FUNCTIONS
-        const contactTemplates = {
-            reviews: {
-                title: "Let's Collaborate on a Google Review!",
-                message: "I'm interested in featuring your business with an authentic Google review and photos.\n\nWhat I offer:\n✓ 5-star Google review\n✓ Professional written review\n✓ Photos/videos of experience\n\nIn exchange, I'm happy to visit and experience your business."
-            },
-            unboxings: {
-                title: "Product Unboxing Collaboration",
-                message: "I'd love to feature your product with a professional unboxing video!\n\nHere's the collaboration:\n✓ You send me your product\n✓ I create 1 unboxing video\n✓ Posted to my audience\n\nYour brand gets authentic, engaging video coverage."
-            },
-            jojo: {
-                title: "Jojo Content Opportunity",
-                message: "If you have pet-friendly products, I'd love to feature them with Jojo!\n\n✓ Send your product\n✓ I'll create engaging unboxing/feature video with Jojo\n✓ Posted to my audience\n\nYour brand connects with pet-loving audiences through authentic content."
-            }
-        };
-
         let currentContactType = null;
 
         function openContactModal(type) {
-            currentContactType = type;
-            const template = contactTemplates[type];
-            document.getElementById("modalTitle").textContent = template.title;
-            document.getElementById("modalMessage").textContent = template.message;
             document.getElementById("contactModal").style.display = "flex";
             document.getElementById("contactCompany").focus();
         }
@@ -587,6 +573,7 @@
             document.getElementById("contactModal").style.display = "none";
             document.getElementById("contactCompany").value = "";
             document.getElementById("contactEmail").value = "";
+            document.getElementById("contactType").value = "";
             document.getElementById("contactSuccess").classList.add("hidden");
         }
 
@@ -595,15 +582,47 @@
             
             const company = document.getElementById("contactCompany").value;
             const email = document.getElementById("contactEmail").value;
+            const type = document.getElementById("contactType").value;
+            
+            // Generate email message based on type
+            let emailMessage = "";
+            if (type === "scheduling") {
+                emailMessage = `I would love to try out your menu. Here is a little bit on how it works:
+
+1. You show off your menu or products
+2. I'll record
+3. I'll review on Google
+4. I'll post on Tik Tok
+
+Let me know a good time that works for you, 
+
+Drea
+
+How could we make that happen?`;
+            } else if (type === "jojo") {
+                emailMessage = `Hello! Jojo will be reviewing your products! Let's get in touch to schedule their delivery. Jojo will post a tik tok as soon as it arrives, highlighting product features, saying the tagline, and making it look great! Let me know as soon as you can! 
+
+Thanks,
+Drea`;
+            } else if (type === "drea") {
+                emailMessage = `Hello! Drea will be reviewing your products! Let's get in touch to schedule their delivery. I will post a tik tok as soon as it arrives, highlighting product features, saying the tagline, and making it look great! Let me know as soon as you can! 
+
+Thanks,
+Drea`;
+            }
             
             const inquiry = {
-                type: currentContactType,
+                type: type,
                 company: company,
                 email: email,
+                message: emailMessage,
                 timestamp: new Date().toISOString()
             };
             
-            // Store inquiry
+            // Store inquiry in Firebase
+            db.ref('inquiries').push(inquiry);
+            
+            // Also store in localStorage for backup
             let inquiries = JSON.parse(localStorage.getItem("dreaContactInquiries") || "[]");
             inquiries.push(inquiry);
             localStorage.setItem("dreaContactInquiries", JSON.stringify(inquiries));
