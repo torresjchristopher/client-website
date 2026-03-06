@@ -385,7 +385,7 @@
                         <a href="mailto:dreastar.ugc@gmail.com" style="color: #ff1493; text-decoration: none; font-size: 1rem; border-bottom: 1px solid #ff1493; padding-bottom: 0.25rem;">dreastar.ugc@gmail.com</a>
                     </div>
 
-                    <p style="color: var(--text-secondary); line-height: 1.8; font-size: 1.05rem; margin-bottom: 2rem;">Hi, I'm Drea — I combine creativity with a strong understanding of social media trends to talk about my favorite restaurants, clothes, and brands to create content that feels natural and engaging.</p>
+                    <p style="color: var(--text-secondary); line-height: 1.8; font-size: 1.05rem; margin-bottom: 2rem;">Hi, I'm <span style="cursor: pointer; transition: color 0.3s ease;" onmouseover="this.style.color='#ff1493'" onmouseout="this.style.color='var(--text-secondary)'">Drea</span> — I combine creativity with a strong understanding of social media trends to talk about my favorite restaurants, clothes, and brands to create content that feels natural and engaging.</p>
                     <p style="color: var(--text-secondary); line-height: 1.8; font-size: 1.05rem; margin-bottom: 2rem;">I create high-quality content that resonates.</p>
 
                     <!-- Brands Image -->
@@ -421,14 +421,16 @@
                         
                         <input type="email" id="brandEmail" placeholder="Email Address" required style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif;">
                         
-                        <select id="brandServiceType" required style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif;">
-                            <option value="">Select Service Type</option>
-                            <option value="scheduling">Scheduling a Review</option>
-                            <option value="jojo">Sending Products to Jojo</option>
-                            <option value="drea">Sending Products to Drea</option>
-                        </select>
+                        <input type="hidden" id="selectedServiceType" value="">
                         
-                        <button type="button" onclick="handleBrandFormSubmit()" style="padding: 0.75rem; background: var(--text-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#ff1493'" onmouseout="this.style.backgroundColor='var(--text-primary)'">Send Inquiry</button>
+                        <!-- Service Type Buttons -->
+                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+                            <button type="button" class="service-btn" data-type="scheduling" onclick="selectServiceType('scheduling', this)" style="padding: 0.75rem 1.5rem; background: var(--text-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background-color 0.3s ease;" onmouseover="if(!this.classList.contains('active')) this.style.backgroundColor='#cccccc'" onmouseout="if(!this.classList.contains('active')) this.style.backgroundColor='var(--text-primary)'">Scheduling a Review</button>
+                            <button type="button" class="service-btn" data-type="jojo" onclick="selectServiceType('jojo', this)" style="padding: 0.75rem 1.5rem; background: var(--text-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background-color 0.3s ease;" onmouseover="if(!this.classList.contains('active')) this.style.backgroundColor='#cccccc'" onmouseout="if(!this.classList.contains('active')) this.style.backgroundColor='var(--text-primary)'">Sending to Jojo</button>
+                            <button type="button" class="service-btn" data-type="drea" onclick="selectServiceType('drea', this)" style="padding: 0.75rem 1.5rem; background: var(--text-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background-color 0.3s ease;" onmouseover="if(!this.classList.contains('active')) this.style.backgroundColor='#cccccc'" onmouseout="if(!this.classList.contains('active')) this.style.backgroundColor='var(--text-primary)'">Sending to Drea</button>
+                        </div>
+                        
+                        <button type="button" onclick="handleBrandFormSubmit()" style="padding: 0.75rem; background: var(--text-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#ff1493'" onmouseout="this.style.backgroundColor='var(--text-primary)'">Send Request</button>
                         <div id="brandSuccess" class="hidden" style="text-align: center; margin-top: 0.5rem; color: #34c759;">✓ Thanks! I'll get back to you soon.</div>
                     </form>
                 </div>
@@ -679,13 +681,28 @@ Drea`;
             }, 3000);
         }
 
+        function selectServiceType(type, button) {
+            // Remove active class from all service buttons
+            document.querySelectorAll(".service-btn").forEach(btn => {
+                btn.classList.remove("active");
+                btn.style.backgroundColor = "var(--text-primary)";
+            });
+            
+            // Add active class to clicked button
+            button.classList.add("active");
+            button.style.backgroundColor = "#ff1493";
+            
+            // Store selected type in hidden field
+            document.getElementById("selectedServiceType").value = type;
+        }
+
         function handleBrandFormSubmit() {
             const company = document.getElementById("brandCompany").value;
             const email = document.getElementById("brandEmail").value;
-            const serviceType = document.getElementById("brandServiceType").value;
+            const serviceType = document.getElementById("selectedServiceType").value;
 
             if (!company || !email || !serviceType) {
-                alert("Please fill in all fields");
+                alert("Please fill in all fields and select a service type");
                 return;
             }
 
@@ -735,10 +752,13 @@ Drea`;
                 document.getElementById("brandSuccess").classList.add("hidden");
                 document.getElementById("brandCompany").value = "";
                 document.getElementById("brandEmail").value = "";
-                document.getElementById("brandServiceType").value = "";
+                document.getElementById("selectedServiceType").value = "";
+                document.querySelectorAll(".service-btn").forEach(btn => {
+                    btn.classList.remove("active");
+                    btn.style.backgroundColor = "var(--text-primary)";
+                });
             }, 2000);
         }
-        
         // ROUTING FUNCTIONS
         function navigateTo(path) {
             window.location.hash = path;
