@@ -1,0 +1,14 @@
+# Credentials and secrets
+*.json
+.env
+.env.local
+firebase-config.js
+
+# Node/build
+node_modules/
+dist/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
