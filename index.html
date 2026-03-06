@@ -540,14 +540,9 @@
                 
                 <input type="email" id="contactEmail" placeholder="Email Address" required style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 0.95rem;">
                 
-                <select id="contactType" required style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 0.95rem;">
-                    <option value="">Select Option</option>
-                    <option value="scheduling">Scheduling a Review</option>
-                    <option value="jojo">Sending Products to Jojo</option>
-                    <option value="drea">Sending Products to Drea</option>
-                </select>
+                <input type="hidden" id="contactType" value="">
                 
-                <button type="submit" style="padding: 0.75rem; background: var(--text-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;">Send Inquiry</button>
+                <button type="submit" style="padding: 0.75rem; background: var(--text-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#ff1493'" onmouseout="this.style.backgroundColor='var(--text-primary)'">Send Request</button>
                 <div id="contactSuccess" class="hidden" style="color: #34c759; text-align: center; margin-top: 0.5rem;">✓ Inquiry sent! I'll get back to you soon.</div>
             </form>
         </div>
@@ -575,6 +570,15 @@
         let currentContactType = null;
 
         function openContactModal(type) {
+            currentContactType = type;
+            const titleMap = {
+                'reviews': 'Send to Drea',
+                'unboxings': 'Send Products',
+                'jojo': 'Send to Jojo'
+            };
+            
+            document.getElementById("modalTitle").textContent = titleMap[type] || 'Send Products';
+            document.getElementById("contactType").value = type;
             document.getElementById("contactModal").style.display = "flex";
             document.getElementById("contactCompany").focus();
         }
