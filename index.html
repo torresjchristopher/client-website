@@ -468,32 +468,7 @@
                 </div>
 
                 <!-- Food Reviews Gallery -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 4rem;">
-                    <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-                        <img src="Food/Food/IMG_0435.heic" alt="Food Review" style="width: 100%; height: auto; display: block;">
-                    </div>
-                    <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-                        <img src="Food/Food/IMG_4188.heic" alt="Food Review" style="width: 100%; height: auto; display: block;">
-                    </div>
-                    <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-                        <img src="Food/Food/IMG_4957.heic" alt="Food Review" style="width: 100%; height: auto; display: block;">
-                    </div>
-                    <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-                        <img src="Food/Food/IMG_5175.heic" alt="Food Review" style="width: 100%; height: auto; display: block;">
-                    </div>
-                    <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-                        <img src="Food/Food/IMG_5181.heic" alt="Food Review" style="width: 100%; height: auto; display: block;">
-                    </div>
-                    <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-                        <img src="Food/Food/IMG_5266.heic" alt="Food Review" style="width: 100%; height: auto; display: block;">
-                    </div>
-                    <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-                        <img src="Food/Food/IMG_5649.heic" alt="Food Review" style="width: 100%; height: auto; display: block;">
-                    </div>
-                    <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
-                        <img src="Food/Food/IMG_5714.heic" alt="Food Review" style="width: 100%; height: auto; display: block;">
-                    </div>
-                </div>
+                <div id="foodReviewsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 4rem;"></div>
                 
                 <div id="reviewsContainer" class="reviews-grid"></div>
             </section>
@@ -876,7 +851,30 @@
         window.addEventListener("load", () => {
             const path = window.location.hash.slice(1) || "/";
             loadPage(path);
+            loadFoodImages();
         });
+
+        function loadFoodImages() {
+            const foodImages = [
+                "Food/Food/IMG_0435.heic",
+                "Food/Food/IMG_4188.heic",
+                "Food/Food/IMG_4957.heic",
+                "Food/Food/IMG_5175.heic",
+                "Food/Food/IMG_5181.heic",
+                "Food/Food/IMG_5266.heic",
+                "Food/Food/IMG_5649.heic",
+                "Food/Food/IMG_5714.heic"
+            ];
+
+            const container = document.getElementById("foodReviewsContainer");
+            if (container) {
+                container.innerHTML = foodImages.map(imagePath => `
+                    <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);">
+                        <img src="${imagePath}" alt="Food Review" style="width: 100%; height: auto; display: block; background: var(--bg-secondary);" onerror="this.style.display='none';">
+                    </div>
+                `).join("");
+            }
+        }
     </script>
 </body>
 </html>
