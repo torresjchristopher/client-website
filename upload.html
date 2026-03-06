@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drea - Upload Dashboard</title>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -367,6 +369,20 @@
     </div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDw4DpBZp8uv_B9wzJbiibGvUoQSWK7-0Q",
+            authDomain: "drea-star.firebaseapp.com",
+            projectId: "drea-star",
+            storageBucket: "drea-star.firebasestorage.app",
+            messagingSenderId: "292437810922",
+            appId: "1:292437810922:web:3e359f75b03e38ba3f8193"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         const PASSWORD = "Star";
         let isLoggedIn = false;
 
@@ -434,8 +450,14 @@
         }
 
         function saveReview(rating, text, businessName, businessUrl, imageData) {
+            const reviewData = { rating, text, businessName, businessUrl, image: imageData, timestamp: new Date().toISOString() };
+            
+            // Save to Firebase
+            db.ref('reviews').push(reviewData);
+            
+            // Also update localStorage for backup
             let reviews = JSON.parse(localStorage.getItem("dreaReviews") || "[]");
-            reviews.push({ rating, text, businessName, businessUrl, image: imageData, timestamp: new Date().toISOString() });
+            reviews.push(reviewData);
             localStorage.setItem("dreaReviews", JSON.stringify(reviews));
 
             document.getElementById("reviewSuccess").classList.remove("hidden");
@@ -455,8 +477,14 @@
                 return;
             }
 
+            const videoData = { url: url, timestamp: new Date().toISOString() };
+            
+            // Save to Firebase
+            db.ref('videos').push(videoData);
+            
+            // Also update localStorage for backup
             let videos = JSON.parse(localStorage.getItem("dreaVideos") || "[]");
-            videos.push({ url: url, timestamp: new Date().toISOString() });
+            videos.push(videoData);
             localStorage.setItem("dreaVideos", JSON.stringify(videos));
 
             document.getElementById("videoSuccess").classList.remove("hidden");
@@ -473,8 +501,14 @@
                 return;
             }
 
+            const jojoData = { url: url, timestamp: new Date().toISOString() };
+            
+            // Save to Firebase
+            db.ref('jojo').push(jojoData);
+            
+            // Also update localStorage for backup
             let jojos = JSON.parse(localStorage.getItem("dreaJojo") || "[]");
-            jojos.push({ url: url, timestamp: new Date().toISOString() });
+            jojos.push(jojoData);
             localStorage.setItem("dreaJojo", JSON.stringify(jojos));
 
             document.getElementById("jojoSuccess").classList.remove("hidden");
@@ -510,8 +544,14 @@
         }
 
         function saveDogReview(rating, text, businessName, businessUrl, imageData) {
+            const dogReviewData = { rating, text, businessName, businessUrl, image: imageData, timestamp: new Date().toISOString() };
+            
+            // Save to Firebase
+            db.ref('dogReviews').push(dogReviewData);
+            
+            // Also update localStorage for backup
             let dogReviews = JSON.parse(localStorage.getItem("dreaDogReviews") || "[]");
-            dogReviews.push({ rating, text, businessName, businessUrl, image: imageData, timestamp: new Date().toISOString() });
+            dogReviews.push(dogReviewData);
             localStorage.setItem("dreaDogReviews", JSON.stringify(dogReviews));
 
             document.getElementById("dogReviewSuccess").classList.remove("hidden");

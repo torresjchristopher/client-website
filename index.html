@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Drea - Premium Portfolio</title>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database-compat.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -534,6 +536,20 @@
     </div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDw4DpBZp8uv_B9wzJbiibGvUoQSWK7-0Q",
+            authDomain: "drea-star.firebaseapp.com",
+            projectId: "drea-star",
+            storageBucket: "drea-star.firebasestorage.app",
+            messagingSenderId: "292437810922",
+            appId: "1:292437810922:web:3e359f75b03e38ba3f8193"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         const PASSWORD = "Star";
         
         // CONTACT MODAL FUNCTIONS
@@ -683,111 +699,149 @@
 
         function loadReviews() {
             const container = document.getElementById("reviewsContainer");
-            const reviews = JSON.parse(localStorage.getItem("dreaReviews") || "[]");
             
-            container.innerHTML = reviews.map(review => `
-                <div class="google-review" ${review.businessUrl ? `onclick="window.open('${review.businessUrl}', '_blank')"` : ''}>
-                    ${review.image ? `<div style="width: 100%; height: 150px; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; position: relative;"><img src="${review.image}" alt="Review" style="width: 100%; height: 100%; object-fit: cover;"></div>` : ''}
-                    <div class="review-header">
-                        <img src="Main pfp.png" alt="Drea" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">
-                        <div class="review-author">
-                            <div class="review-name">Drea</div>
-                            <div class="review-stars">${"★".repeat(review.rating)}</div>
+            // Load from Firebase
+            db.ref('reviews').on('value', snapshot => {
+                let reviews = [];
+                snapshot.forEach(childSnapshot => {
+                    reviews.push(childSnapshot.val());
+                });
+                
+                // Also sync to localStorage
+                localStorage.setItem("dreaReviews", JSON.stringify(reviews));
+                
+                container.innerHTML = reviews.map(review => `
+                    <div class="google-review" ${review.businessUrl ? `onclick="window.open('${review.businessUrl}', '_blank')"` : ''}>
+                        ${review.image ? `<div style="width: 100%; height: 150px; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; position: relative;"><img src="${review.image}" alt="Review" style="width: 100%; height: 100%; object-fit: cover;"></div>` : ''}
+                        <div class="review-header">
+                            <img src="Main pfp.png" alt="Drea" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">
+                            <div class="review-author">
+                                <div class="review-name">Drea</div>
+                                <div class="review-stars">${"★".repeat(review.rating)}</div>
+                            </div>
+                        </div>
+                        <div class="review-text">${review.text}</div>
+                        ${review.businessUrl ? `<a href="${review.businessUrl}" target="_blank" class="review-business">${review.businessName || 'View on Google'}</a>` : ''}
+                        
+                        <!-- Engagement Metrics -->
+                        <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); flex-wrap: wrap;">
+                            <span style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-lighter); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; color: var(--text-secondary);">
+                                👍 ${Math.floor(Math.random() * 500) + 100}+ likes
+                            </span>
+                            <span style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-lighter); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; color: var(--text-secondary);">
+                                📤 ${Math.floor(Math.random() * 200) + 20}+ shares
+                            </span>
                         </div>
                     </div>
-                    <div class="review-text">${review.text}</div>
-                    ${review.businessUrl ? `<a href="${review.businessUrl}" target="_blank" class="review-business">${review.businessName || 'View on Google'}</a>` : ''}
-                    
-                    <!-- Engagement Metrics -->
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); flex-wrap: wrap;">
-                        <span style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-lighter); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; color: var(--text-secondary);">
-                            👍 ${Math.floor(Math.random() * 500) + 100}+ likes
-                        </span>
-                        <span style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-lighter); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; color: var(--text-secondary);">
-                            📤 ${Math.floor(Math.random() * 200) + 20}+ shares
-                        </span>
-                    </div>
-                </div>
-            `).join("");
+                `).join("");
 
-            if (reviews.length === 0) {
-                container.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No reviews yet.</p>";
+                if (reviews.length === 0) {
+                    container.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No reviews yet.</p>";
             }
+        }
         }
 
         function loadVideos() {
             const container = document.getElementById("videosContainer");
-            const videos = JSON.parse(localStorage.getItem("dreaVideos") || "[]");
             
-            container.innerHTML = videos.map(video => {
-                const embedUrl = video.url.includes("tiktok.com") 
-                    ? `https://www.tiktok.com/embed/v2/${extractTikTokId(video.url)}`
-                    : video.url;
+            // Load from Firebase
+            db.ref('videos').on('value', snapshot => {
+                let videos = [];
+                snapshot.forEach(childSnapshot => {
+                    videos.push(childSnapshot.val());
+                });
                 
-                return `
-                    <div class="gallery-item">
-                        <iframe src="${embedUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                `;
-            }).join("");
+                // Also sync to localStorage
+                localStorage.setItem("dreaVideos", JSON.stringify(videos));
+                
+                container.innerHTML = videos.map(video => {
+                    const embedUrl = video.url.includes("tiktok.com") 
+                        ? `https://www.tiktok.com/embed/v2/${extractTikTokId(video.url)}`
+                        : video.url;
+                    
+                    return `
+                        <div class="gallery-item">
+                            <iframe src="${embedUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                    `;
+                }).join("");
 
-            if (videos.length === 0) {
-                container.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No videos yet.</p>";
-            }
+                if (videos.length === 0) {
+                    container.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No videos yet.</p>";
+                }
+            });
         }
 
         function loadJojo() {
             const jojoContainer = document.getElementById("jojoContainer");
             const dogReviewsContainer = document.getElementById("dogReviewsGrid");
-            const jojos = JSON.parse(localStorage.getItem("dreaJojo") || "[]");
-            const dogReviews = JSON.parse(localStorage.getItem("dreaDogReviews") || "[]");
             
-            // Load dog reviews
-            dogReviewsContainer.innerHTML = dogReviews.map(review => `
-                <div class="google-review">
-                    ${review.image ? `<div style="width: 100%; height: 150px; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; position: relative;"><img src="${review.image}" alt="Review" style="width: 100%; height: 100%; object-fit: cover;"></div>` : ''}
-                    <div class="review-header">
-                        <img src="Dog.jpg" alt="Jojo" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">
-                        <div class="review-author">
-                            <div class="review-name">Jojo</div>
-                            <div class="review-stars">${"★".repeat(review.rating)}</div>
+            // Load dog reviews from Firebase
+            db.ref('dogReviews').on('value', snapshot => {
+                let dogReviews = [];
+                snapshot.forEach(childSnapshot => {
+                    dogReviews.push(childSnapshot.val());
+                });
+                
+                // Also sync to localStorage
+                localStorage.setItem("dreaDogReviews", JSON.stringify(dogReviews));
+                
+                dogReviewsContainer.innerHTML = dogReviews.map(review => `
+                    <div class="google-review">
+                        ${review.image ? `<div style="width: 100%; height: 150px; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; position: relative;"><img src="${review.image}" alt="Review" style="width: 100%; height: 100%; object-fit: cover;"></div>` : ''}
+                        <div class="review-header">
+                            <img src="Dog.jpg" alt="Jojo" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">
+                            <div class="review-author">
+                                <div class="review-name">Jojo</div>
+                                <div class="review-stars">${"★".repeat(review.rating)}</div>
+                            </div>
+                        </div>
+                        <div class="review-text">${review.text}</div>
+                        ${review.businessUrl ? `<a href="${review.businessUrl}" target="_blank" class="review-business">${review.businessName || 'View on Google'}</a>` : ''}
+                        
+                        <!-- Engagement Metrics -->
+                        <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); flex-wrap: wrap;">
+                            <span style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-lighter); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; color: var(--text-secondary);">
+                                👍 ${Math.floor(Math.random() * 500) + 100}+ likes
+                            </span>
+                            <span style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-lighter); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; color: var(--text-secondary);">
+                                📤 ${Math.floor(Math.random() * 200) + 20}+ shares
+                            </span>
                         </div>
                     </div>
-                    <div class="review-text">${review.text}</div>
-                    ${review.businessUrl ? `<a href="${review.businessUrl}" target="_blank" class="review-business">${review.businessName || 'View on Google'}</a>` : ''}
-                    
-                    <!-- Engagement Metrics -->
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); flex-wrap: wrap;">
-                        <span style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-lighter); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; color: var(--text-secondary);">
-                            👍 ${Math.floor(Math.random() * 500) + 100}+ likes
-                        </span>
-                        <span style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--accent-lighter); padding: 0.4rem 0.75rem; border-radius: 20px; font-size: 0.85rem; color: var(--text-secondary);">
-                            📤 ${Math.floor(Math.random() * 200) + 20}+ shares
-                        </span>
-                    </div>
-                </div>
-            `).join("");
+                `).join("");
 
-            if (dogReviews.length === 0) {
-                dogReviewsContainer.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No reviews yet.</p>";
-            }
+                if (dogReviews.length === 0) {
+                    dogReviewsContainer.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No reviews yet.</p>";
+                }
+            });
 
-            // Load jojo videos
-            jojoContainer.innerHTML = jojos.map(jojo => {
-                const embedUrl = jojo.url.includes("tiktok.com")
-                    ? `https://www.tiktok.com/embed/v2/${extractTikTokId(jojo.url)}`
-                    : jojo.url;
+            // Load jojo videos from Firebase
+            db.ref('jojo').on('value', snapshot => {
+                let jojos = [];
+                snapshot.forEach(childSnapshot => {
+                    jojos.push(childSnapshot.val());
+                });
                 
-                return `
-                    <div class="gallery-item">
-                        <iframe src="${embedUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                `;
-            }).join("");
+                // Also sync to localStorage
+                localStorage.setItem("dreaJojo", JSON.stringify(jojos));
+                
+                jojoContainer.innerHTML = jojos.map(jojo => {
+                    const embedUrl = jojo.url.includes("tiktok.com")
+                        ? `https://www.tiktok.com/embed/v2/${extractTikTokId(jojo.url)}`
+                        : jojo.url;
+                    
+                    return `
+                        <div class="gallery-item">
+                            <iframe src="${embedUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                        </div>
+                    `;
+                }).join("");
 
-            if (jojos.length === 0) {
-                jojoContainer.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No content yet.</p>";
-            }
+                if (jojos.length === 0) {
+                    jojoContainer.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: var(--text-secondary);'>No content yet.</p>";
+                }
+            });
         }
 
         window.addEventListener("load", () => {
