@@ -1,5 +1,8 @@
 from PIL import Image
+from pillow_heif import register_heif_opener
 import os
+
+register_heif_opener()
 
 food_dir = "Food/Food"
 if os.path.exists(food_dir):
@@ -13,6 +16,6 @@ if os.path.exists(food_dir):
                 img = Image.open(heic_path)
                 img = img.convert('RGB')
                 img.save(jpg_path, 'JPEG', quality=90)
-                print(f"Converted {filename} to {jpg_filename}")
+                print(f"✓ Converted {filename} to {jpg_filename}")
             except Exception as e:
-                print(f"Error converting {filename}: {e}")
+                print(f"✗ Error converting {filename}: {e}")
