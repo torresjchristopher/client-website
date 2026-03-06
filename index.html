@@ -619,7 +619,10 @@ Drea`;
                 timestamp: new Date().toISOString()
             };
             
-            // Store inquiry in localStorage
+            // Store inquiry in Firebase
+            db.ref('inquiries').push(inquiry);
+            
+            // Also store in localStorage for backup
             let inquiries = JSON.parse(localStorage.getItem("dreaContactInquiries") || "[]");
             inquiries.push(inquiry);
             localStorage.setItem("dreaContactInquiries", JSON.stringify(inquiries));
