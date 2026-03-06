@@ -406,10 +406,31 @@
                             <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0;">Product Impressions Per Video</p>
                         </div>
                         <div>
-                            <p style="color: var(--text-primary); font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">Thousands</p>
+                            <p style="color: var(--text-primary); font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; cursor: pointer;" onmouseover="this.style.color='#ff1493'" onmouseout="this.style.color='var(--text-primary)'" class="thousands-text">Thousands</p>
                             <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0;">Clicks & Engagements</p>
                         </div>
                     </div>
+                </div>
+
+                <!-- BRAND COLLABORATION SECTION -->
+                <div style="max-width: 800px; margin: 3rem auto;">
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--text-primary); text-align: center;">Brand Collaboration</h3>
+                    
+                    <form style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <input type="text" id="brandCompany" placeholder="Company Name" required style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif;">
+                        
+                        <input type="email" id="brandEmail" placeholder="Email Address" required style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif;">
+                        
+                        <select id="brandServiceType" required style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; font-family: 'Inter', sans-serif;">
+                            <option value="">Select Service Type</option>
+                            <option value="scheduling">Scheduling a Review</option>
+                            <option value="jojo">Sending Products to Jojo</option>
+                            <option value="drea">Sending Products to Drea</option>
+                        </select>
+                        
+                        <button type="button" onclick="handleBrandFormSubmit()" style="padding: 0.75rem; background: var(--text-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#ff1493'" onmouseout="this.style.backgroundColor='var(--text-primary)'">Send Inquiry</button>
+                        <div id="brandSuccess" class="hidden" style="text-align: center; margin-top: 0.5rem; color: #34c759;">✓ Thanks! I'll get back to you soon.</div>
+                    </form>
                 </div>
 
                 <!-- Signature Section -->
@@ -656,6 +677,66 @@ Drea`;
             setTimeout(() => {
                 successMsg.classList.add("hidden");
             }, 3000);
+        }
+
+        function handleBrandFormSubmit() {
+            const company = document.getElementById("brandCompany").value;
+            const email = document.getElementById("brandEmail").value;
+            const serviceType = document.getElementById("brandServiceType").value;
+
+            if (!company || !email || !serviceType) {
+                alert("Please fill in all fields");
+                return;
+            }
+
+            // Generate email message based on service type (same as contact modal)
+            let emailMessage = "";
+            if (serviceType === "scheduling") {
+                emailMessage = `I would love to try out your menu. Here is a little bit on how it works:
+
+1. You show off your menu or products
+2. I'll record
+3. I'll review on Google
+4. I'll post on Tik Tok
+
+Let me know a good time that works for you, 
+
+Drea
+
+How could we make that happen?`;
+            } else if (serviceType === "jojo") {
+                emailMessage = `Hello! Jojo will be reviewing your products! Let's get in touch to schedule their delivery. Jojo will post a tik tok as soon as it arrives, highlighting product features, saying the tagline, and making it look great! Let me know as soon as you can! 
+
+Thanks,
+Drea`;
+            } else if (serviceType === "drea") {
+                emailMessage = `Hello! Drea will be reviewing your products! Let's get in touch to schedule their delivery. I will post a tik tok as soon as it arrives, highlighting product features, saying the tagline, and making it look great! Let me know as soon as you can! 
+
+Thanks,
+Drea`;
+            }
+
+            const inquiry = {
+                type: serviceType,
+                company: company,
+                email: email,
+                message: emailMessage,
+                timestamp: new Date().toISOString()
+            };
+
+            // Store in localStorage
+            let inquiries = JSON.parse(localStorage.getItem("dreaContactInquiries") || "[]");
+            inquiries.push(inquiry);
+            localStorage.setItem("dreaContactInquiries", JSON.stringify(inquiries));
+
+            // Show success
+            document.getElementById("brandSuccess").classList.remove("hidden");
+            setTimeout(() => {
+                document.getElementById("brandSuccess").classList.add("hidden");
+                document.getElementById("brandCompany").value = "";
+                document.getElementById("brandEmail").value = "";
+                document.getElementById("brandServiceType").value = "";
+            }, 2000);
         }
         
         // ROUTING FUNCTIONS
