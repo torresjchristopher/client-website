@@ -632,40 +632,48 @@
 
         function loadMessages() {
             const container = document.getElementById("messagesContainer");
-            const inquiries = JSON.parse(localStorage.getItem("dreaContactInquiries") || "[]");
             const messages = JSON.parse(localStorage.getItem("dreaMessages") || "[]");
 
             let html = "";
 
-            // Display inquiries from landing page
-            if (inquiries.length > 0) {
-                html += "<h3 style='margin-bottom: 1rem; color: var(--text-primary);'>Incoming Inquiries</h3>";
-                html += inquiries.map(inquiry => `
-                    <div style="background: var(--accent-lighter); padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--text-primary);">
-                        <p style="margin: 0; font-weight: 600; color: var(--text-primary);">${inquiry.company}</p>
-                        <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">${inquiry.email} • ${inquiry.type}</p>
-                        <p style="margin: 0.75rem 0 0 0; color: var(--text-secondary); white-space: pre-wrap;">${inquiry.timestamp}</p>
-                    </div>
-                `).join("");
-            }
+            // Load inquiries from Firebase
+            db.ref('inquiries').on('value', snapshot => {
+                const inquiries = [];
+                snapshot.forEach(childSnapshot => {
+                    inquiries.push(childSnapshot.val());
+                });
 
-            // Display sent messages
-            if (messages.length > 0) {
-                html += messages.length > 0 ? "<h3 style='margin-top: 2rem; margin-bottom: 1rem; color: var(--text-primary);'>Conversation</h3>" : "";
-                html += messages.map(msg => `
-                    <div style="background: ${msg.from === 'Drea' ? 'var(--accent-lighter)' : 'white'}; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
-                        <p style="margin: 0; font-weight: 600; color: var(--text-primary);">${msg.from} → ${msg.to}</p>
-                        <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); white-space: pre-wrap;">${msg.text}</p>
-                        <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">${new Date(msg.timestamp).toLocaleString()}</p>
-                    </div>
-                `).join("");
-            }
+                // Display inquiries from Firebase
+                if (inquiries.length > 0) {
+                    html = "<h3 style='margin-bottom: 1rem; color: var(--text-primary);'>Incoming Inquiries</h3>";
+                    html += inquiries.map(inquiry => `
+                        <div style="background: var(--accent-lighter); padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--text-primary);">
+                            <p style="margin: 0; font-weight: 600; color: var(--text-primary);">${inquiry.company}</p>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.9rem; color: var(--text-secondary);">${inquiry.email} • ${inquiry.type}</p>
+                            <p style="margin: 0.75rem 0 0 0; color: var(--text-secondary); white-space: pre-wrap;">Message: ${inquiry.message}</p>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">${new Date(inquiry.timestamp).toLocaleString()}</p>
+                        </div>
+                    `).join("");
+                }
 
-            if (!html) {
-                html = "<p style='color: var(--text-secondary); text-align: center;'>No messages yet.</p>";
-            }
+                // Display sent messages
+                if (messages.length > 0) {
+                    html += messages.length > 0 ? "<h3 style='margin-top: 2rem; margin-bottom: 1rem; color: var(--text-primary);'>Conversation</h3>" : "";
+                    html += messages.map(msg => `
+                        <div style="background: ${msg.from === 'Drea' ? 'var(--accent-lighter)' : 'white'}; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                            <p style="margin: 0; font-weight: 600; color: var(--text-primary);">${msg.from} → ${msg.to}</p>
+                            <p style="margin: 0.5rem 0 0 0; color: var(--text-secondary); white-space: pre-wrap;">${msg.text}</p>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: var(--text-secondary);">${new Date(msg.timestamp).toLocaleString()}</p>
+                        </div>
+                    `).join("");
+                }
 
-            container.innerHTML = html;
+                if (!html) {
+                    html = "<p style='color: var(--text-secondary); text-align: center;'>No messages yet.</p>";
+                }
+
+                container.innerHTML = html;
+            });
         }
 
         window.addEventListener("load", () => {
