@@ -383,6 +383,44 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // Migration function: move old localStorage data to Firebase
+        function migrateLocalStorageToFirebase() {
+            if (localStorage.getItem("migrationComplete")) {
+                return; // Already migrated
+            }
+
+            // Migrate reviews
+            const oldReviews = JSON.parse(localStorage.getItem("dreaReviews") || "[]");
+            oldReviews.forEach(review => {
+                db.ref('reviews').push(review);
+            });
+
+            // Migrate videos
+            const oldVideos = JSON.parse(localStorage.getItem("dreaVideos") || "[]");
+            oldVideos.forEach(video => {
+                db.ref('videos').push(video);
+            });
+
+            // Migrate jojo content
+            const oldJojo = JSON.parse(localStorage.getItem("dreaJojo") || "[]");
+            oldJojo.forEach(jojo => {
+                db.ref('jojo').push(jojo);
+            });
+
+            // Migrate dog reviews
+            const oldDogReviews = JSON.parse(localStorage.getItem("dreaDogReviews") || "[]");
+            oldDogReviews.forEach(review => {
+                db.ref('dogReviews').push(review);
+            });
+
+            // Mark migration as complete
+            localStorage.setItem("migrationComplete", "true");
+            console.log("Migration complete: All old data moved to Firebase");
+        }
+
+        // Run migration on page load
+        window.addEventListener("load", migrateLocalStorageToFirebase);
+
         const PASSWORD = "Star";
         let isLoggedIn = false;
 
